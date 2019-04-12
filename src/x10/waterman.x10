@@ -9,6 +9,7 @@ public class waterman {
 	//=================================================================================================
 	// build the Blosum dict;
 	public static def buildBlosum(inputBlosum: String):Array_2[Long]{
+		// TODO build a real parser;
 		val blosum = new Array_2[Long](4, 4);
 		// A:0 C:1 G:2 T:3
 		blosum(0,0) = 4;
