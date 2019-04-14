@@ -84,11 +84,160 @@ public class waterman {
    
    
    //=================================================================================================
+   // Find the max score value and its position
+
+
+
+   //=================================================================================================
+   
+   
+   
+   //=================================================================================================
    // traceback;
-   public static def traceback(scoreMatrix: Array_2[Long]): Rail[Point]{
+   public static def traceback(scoreMatrix: Array_2[Long], input1:Rail[Char], input2:Rail[Char], blosum:Array_2[Long]): Rail[Point]
+
+   {
 	   //TODO 
-	   // °´Ë³ĞòÊä³öÂ·Ïß;
+	   // æŒ‰é¡ºåºè¾“å‡ºè·¯çº¿;
+
+    var max:Long =0;
+    var max_i:Long = 0;
+    var max_j:Long = 0;
+
+    var size1:Long = input1.size;
+    var size2:Long = input2.size;
+
+     for (i in 0..size1) {
+       for (j in 0..size2) {
+         if (scoreMatrix(i,j) > max)
+         {
+          max=scoreMatrix(i,j);
+          max_i=i;
+          max_j=j;
+         }
+       }
+     }
+     
+     var total_length1:Long = 0;
+     var total_length2:Long = 0;
+     var identity:Long = 0;
+     var gaps:Long = 0;
+     var score:Long = max;
+     var current_score:Long = max;
+     var current_i:Long = max_i;
+     var current_j:Long = max_j;
+
+     //var in1:String;
+     //var in2:String;
+
+     var in1 = new ArrayList[char]();
+     var in2 = new ArrayList[char]();
+
+     while (scoreMatrix(current_i,current_j)!=0)
+
+
+     {
+        if (current_score-blosum(current_i-1,current_j-1) == scoreMatrix(current_i-1,current_j-1)) 
+        {
+          identity+=1;
+          total_length1+=1;
+          total_length2+=1;
+          current_score = scoreMatrix(current_i-1,current_j-1);
+          
+          int1.add(input1[i]);
+          int2.add(input2[j]);
+
+          //int1 = input1[i] + int1;
+          //int2 = input2[j] + int2;
+          current_i-=1;
+          current_j-=1;
+        }
+
+        else 
+          {
+            outerï¼šfor (var i:Long=current_i-1;i>=0;--i)
+            {
+              if (current_score + penalty(a,b,(current_i-i+1)) == scoreMatrix(i,current_j))
+              {
+                total_length1+=(current_i-i);
+                current_score = scoreMatrix(i,current_j);
+                for (j in (current_i-1)..i)
+                {
+                  //int1= input1[j] + int1;
+
+                  int1.add(input1[i]);
+                }
+
+                gaps+=1;
+
+                current_i=i;
+
+                break outer;
+ 
+              }
+            }
+          }
+
+          else 
+
+             {
+            outer: for (var i:Long=current_j;i>=0;--i)
+            {
+              if (current_score + penalty(a,b,(current_j-i+1)) == scoreMatrix(current_i,i))
+              {
+                total_length2+=(current_j-i);
+                current_score = scoreMatrix(current_i,i);
+                for (j in (current_j-1)..i)
+                {
+                  //int2=input2[j] + int2;
+
+                  in2.add(input2[j]);
+                }
+
+                gaps+=1;
+
+                current_j=i;
+
+                break outer;
+ 
+              }
+            }
+          }
+
+        
+
+
+
+     }
+
+     Console.OUT.println("Identity: " + identity + "/" + total_length1 + "(" + identity/total_length1*100 +"%)"); 
+     Console.OUT.println("Gaps: " + gaps + "/" + total_length1 + "(" +gaps/total_length1*100 + "%)");
+
+     Console.OUT.println("Score: " + score);
+
+     //Console.OUT.println("1: " + in1);
+     //Console.OUT.println("2: " + in2);
+     
+     Console.OUT.print("1: ");
+     for (i in input1.size..0) 
+     {
+      Console.OUT.print(in1[i]);
+     }
+
+     Console.OUT.println();
+
+
+     Console.OUT.print("2: ");
+     for (i in input2.size..0) 
+     {
+      Console.OUT.print(in2[i]);
+     }
+
+     Console.OUT.println();
+
+
 	   return null;
+          
    }
    //=================================================================================================
    
@@ -99,7 +248,7 @@ public class waterman {
    // Print Result
    public static def printResult(seq:Rail[Point]): void{
 	   //TODO 
-	   // ´òÓ¡½á¹û
+	   // æ‰“å°ç»“æœ
    }
    //=================================================================================================
    
@@ -116,21 +265,20 @@ public class waterman {
     	Console.OUT.println("second input: "+charList2.toString()); 
     	val blosum = buildBlosum("not inplemented yet");
     	Console.OUT.println("blosum: "+blosum.toString()); 
-    	Console.OUT.println("blosum[1,1]: "+blosum(1,1)); //ÓÃÕâÖÖ·½·¨À´µ÷ÓÃblosumµÄ·ÖÊı£¬ÀıÈç[A,A]µÄ·ÖÊı¾ÍÊÇblosum(0,0)
+    	Console.OUT.println("blosum[1,1]: "+blosum(1,1)); //ç”¨è¿™ç§æ–¹æ³•æ¥è°ƒç”¨blosumçš„åˆ†æ•°ï¼Œä¾‹å¦‚[A,A]çš„åˆ†æ•°å°±æ˜¯blosum(0,0)
     	
     	val n:Long = charList1.size + 1; // the row length of score matrix;
-    	val m:Long = charList1.size + 1; // the column length of score matrix;
+    	val m:Long = charList2.size + 1; // the column length of score matrix;
     	Console.OUT.println("n: "+n); 
     	Console.OUT.println("m: "+m); 
     	
     	/*
     	val scoreMatrix = new Array_2[Long](n, m, 0); // build a n x m matrix and initialize everything to 0, no need to initialize the first row and column;
     	calculate(scoreMatrix,charList1,charList2,blosum); // calculate the score matrix
-    	val sequence:Rail[Point] = traceback(scoreMatrix); // trace back and give out the sequence;
+    	val sequence:Rail[Point] = traceback(scoreMatrix,charList1,charList2,blosum); // trace back and give out the sequence;
     	printResult(sequence); // print the result;
     	*/
     	
     	
     }
 }
-//=================================================================================================
