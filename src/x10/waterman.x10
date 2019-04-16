@@ -177,7 +177,7 @@ public class waterman {
       for (j in 1..size2)
       {
               var a0:Long = 0;
-              var a1:Long = scoreMatrix(i-1,j-1) + blosum(input1[i-1],input2[j-1]);
+              var a1:Long = scoreMatrix(i-1,j-1) + blosum(input1(i-1),input2(j-1));
               //var a2:Long = scoreMatrix(i-1,j) - penalty ();
               var a2:Long = scoreMatrix(i-1,j) - penalty(a,b,2);
               for (k in 0..i-2)
@@ -327,9 +327,9 @@ public class waterman {
 
 
 
-     var in1 = new ArrayList[char]();
+     var in1:Rail[Char] = new Rail[Char];
 
-     var in2 = new ArrayList[char]();
+     var in2:Rail[Char] = new Rail[Char];
 
 
 
@@ -355,9 +355,9 @@ public class waterman {
 
           
 
-          int1.add(input1[i-1]);
+          int1.add(input1(i-1));
 
-          int2.add(input2[j-1]);
+          int2.add(input2(j-1));
 
 
 
@@ -397,7 +397,7 @@ public class waterman {
 
 
 
-                  int1.add(input1[i-1]);
+                  int1.add(input1(i-1));
 
                 }
 
@@ -449,7 +449,7 @@ public class waterman {
 
 
 
-                  in2.add(input2[j-1]);
+                  in2.add(input2(j-1));
 
                 }
 
@@ -509,7 +509,7 @@ public class waterman {
 
      {
 
-      Console.OUT.print(in1[i]);
+      Console.OUT.print(in1(i));
 
      }
 
@@ -527,7 +527,7 @@ public class waterman {
 
      {
 
-      Console.OUT.print(in2[i]);
+      Console.OUT.print(in2(i));
 
      }
 
