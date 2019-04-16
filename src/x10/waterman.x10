@@ -216,6 +216,8 @@ public class waterman {
                 max=a3;
               }
 
+              scoreMatrix(i,j) = max;
+
 
       }
 
