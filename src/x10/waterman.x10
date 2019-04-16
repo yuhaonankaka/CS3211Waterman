@@ -178,10 +178,46 @@ public class waterman {
       {
               var a0:Long = 0;
               var a1:Long = scoreMatrix(i-1,j-1) + blosum(input1[i-1],input2[j-1]);
-              var a2:Long = scoreMatrix(i-1,j) - penalty ();
-              var a3:Long = scoreMatrix(i,j-1) - penalty();
+              //var a2:Long = scoreMatrix(i-1,j) - penalty ();
+              var a2:Long = scoreMatrix(i-1,j) - penalty(a,b,2);
+              for (k in 0..i-2)
+              {
+                if (a2<(scoreMatrix(k,j) - penalty(a,b,i-k+1) ))
+                {
+                  a2 = scoreMatrix(k,j) - penalty(a,b,i-k+1);
+                }
+              }
+              //var a3:Long = scoreMatrix(i,j-1) - penalty();
 
-              scoreMatrix(i,j) = max(a0,a1,a2,a3);
+              var a3:Long = scoreMatrix(i,j-1) - penalty(a,b,2);
+
+              for (k in 0..j-2)
+              {
+                if (a3<(scoreMatrix(i,k) - penalty (a,b,j-k+1)))
+                {
+                  a3 = scoreMatrix(i,k) - penalty (a,b,j-k+1);
+                }
+              }
+
+              var max:Long = a0;
+              if (a1>max)
+              { 
+
+                max = a1;
+              }
+
+              if (a2>max)
+              {
+                max=a2;
+              }
+
+              if (a3>max)
+              {
+                max=a3;
+              }
+
+              scoreMatrix(i,j) = max;
+
 
       }
 
