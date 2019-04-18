@@ -10,9 +10,13 @@ import x10.util.*;
 
 
 
+
+
 public class waterman {
 
-
+	static val letterValue = new HashMap[Char,Long]();
+	static val A = 10;
+	static val B = 5;
 
 	//=================================================================================================
 
@@ -21,8 +25,12 @@ public class waterman {
 	public static def buildBlosum(inputBlosum: String):Array_2[Long]{
 
 		// TODO build a real parser;
-
+		
 		val blosum = new Array_2[Long](4, 4);
+		letterValue.put('A',0);
+		letterValue.put('B',1);
+		letterValue.put('G',2);
+		letterValue.put('T',3);
 
 		// A:0 C:1 G:2 T:3
 
@@ -154,83 +162,78 @@ public class waterman {
 
    // calculate the score matrix;
 
-   public static def calculate(scoreMatrix: Array_2[Long], input1:Rail[Char],input2:Rail[Char],blosum:Array_2[Long]): void{
+   public static def calculate(scoreMatrix: Array_2[Long], input1:Rail[Char],input2:Rail[Char],blosum:Array_2[Long]): Array_2[Long]{
 
-	   //TODO calculate the score matrix;
-
-    var size1:Long=input1.size;
-    var size2:Long=input2.size;
-
-    for (i in 0..size1)
-      {
-      scoreMatrix(i,0) = 0;
-      }
-
-    for (j in 0..size2)
-    {
-      scoreMatrix(0,j) =0;
-    }
-
-    for (i in 1..size1)
-    {
-
-      for (j in 1..size2)
-      {
-              var a0:Long = 0;
-              var a1:Long = scoreMatrix(i-1,j-1) + blosum(input1(i-1),input2(j-1));
-              //var a2:Long = scoreMatrix(i-1,j) - penalty ();
-              var a2:Long = scoreMatrix(i-1,j) - penalty(a,b,2);
-              for (k in 0..i-2)
-              {
-                if (a2<(scoreMatrix(k,j) - penalty(a,b,i-k+1) ))
-                {
-                  a2 = scoreMatrix(k,j) - penalty(a,b,i-k+1);
-                }
-              }
-              //var a3:Long = scoreMatrix(i,j-1) - penalty();
-
-              var a3:Long = scoreMatrix(i,j-1) - penalty(a,b,2);
-
-              for (k in 0..j-2)
-              {
-                if (a3<(scoreMatrix(i,k) - penalty (a,b,j-k+1)))
-                {
-                  a3 = scoreMatrix(i,k) - penalty (a,b,j-k+1);
-                }
-              }
-
-              var max:Long = a0;
-              if (a1>max)
-              { 
-
-                max = a1;
-              }
-
-              if (a2>max)
-              {
-                max=a2;
-              }
-
-              if (a3>max)
-              {
-                max=a3;
-              }
-
-              scoreMatrix(i,j) = max;
-
-
-      }
-
-    }
-
+    
+   for (var r:Long = 1;r<=input1.size;r++){
+	   for(var c:Long = 1; c<=input2.size; c++){
+		   var maxScore:Long = 0;
+		   val maxR:Long = maxRowScore(r,c,scoreMatrix);
+		   if(maxR>maxScore){
+			   maxScore = maxR;
+		   }
+		   val maxC:Long = maxColumnScore(r,c,scoreMatrix);
+		   if(maxC>maxScore){
+			   maxScore = maxC;
+		   }
+		   val diagnalScore:Long = scoreMatrix(r-1,c-1)+blosum(letterValue.get(input1(r-1)),letterValue.get(input2(c-1)));
+		   if(diagnalScore>maxScore){
+			   maxScore = diagnalScore;
+		   }
+		   scoreMatrix(r,c) = maxScore;
+	   }   
+	  
+   }
+   return scoreMatrix;
    }
 
    //=================================================================================================
 
    
+   //=================================================================================================
+
+   // find the max value in Row;
+
+   public static def maxRowScore(row: Long, column:Long, scoreMatrix:Array_2[Long]): Long{
+	   var maxScore:Long = 0;
+	   for (var c:Long = 0;c<column;c++){
+		   var tempScore:Long = scoreMatrix(row,c)-penalty(A,B,column-c);
+		   if (tempScore>maxScore){
+			   maxScore = tempScore;
+		   }
+	   }
+	   
+	   return maxScore;
+	   
+   }
+
+   //=================================================================================================
+
+   //=================================================================================================
 
    
+   
 
+   //=================================================================================================
+
+   // find the max value in Column;
+
+   public static def maxColumnScore(row: Long, column:Long, scoreMatrix:Array_2[Long]): Long{
+	   var maxScore:Long = 0;
+	   for (var r:Long = 0;r<row;r++){
+		   var tempScore:Long = scoreMatrix(r,column)-penalty(A,B,row-r);
+		   if (tempScore>maxScore){
+			   maxScore = tempScore;
+		   }
+	   }
+   
+	   
+	   return maxScore;
+	   
+   }
+
+   //=================================================================================================
+   
    
 
    //=================================================================================================
@@ -255,292 +258,74 @@ public class waterman {
 
    // traceback;
 
-   public static def traceback(scoreMatrix: Array_2[Long], input1:Rail[Char], input2:Rail[Char], blosum:Array_2[Long]): Rail[Point]
-
-
-
-   {
-
-	   //TODO 
-
-	   // 按顺序输出路线;
-
-
-
-    var max:Long =0;
-
-    var max_i:Long = 0;
-
-    var max_j:Long = 0;
-
-
-
-    var size1:Long = input1.size;
-
-    var size2:Long = input2.size;
-
-
-
-     for (i in 0..size1) {
-
-       for (j in 0..size2) {
-
-         if (scoreMatrix(i,j) > max)
-
-         {
-
-          max=scoreMatrix(i,j);
-
-          max_i=i;
-
-          max_j=j;
-
-         }
-
-       }
-
-     }
-
-     
-
-     var total_length1:Long = 0;
-
-     var total_length2:Long = 0;
-
-     var identity:Long = 0;
-
-     var gaps:Long = 0;
-
-     var score:Long = max;
-
-     var current_score:Long = max;
-
-     var current_i:Long = max_i;
-
-     var current_j:Long = max_j;
-
-
-
-     //var in1:String;
-
-     //var in2:String;
-
-
-
-     var in1:Rail[Char] = new Rail[Char];
-
-     var in2:Rail[Char] = new Rail[Char];
-
-
-
-     while (scoreMatrix(current_i,current_j)!=0)
-
-
-
-
-
-     {
-
-        if (current_score-blosum(input1(current_i-2),input2(current_j-2)) == scoreMatrix(current_i-1,current_j-1)) 
-
-        {
-
-          identity+=1;
-
-          total_length1+=1;
-
-          total_length2+=1;
-
-          current_score = scoreMatrix(current_i-1,current_j-1);
-
-          
-
-          int1.add(input1(i-1));
-
-          int2.add(input2(j-1));
-
-
-
-          //int1 = input1[i] + int1;
-
-          //int2 = input2[j] + int2;
-
-          current_i-=1;
-
-          current_j-=1;
-
-        }
-
-
-
-        else 
-
-          {
-
-            outer：for (var i:Long=current_i-1;i>=0;--i)
-
-            {
-
-              if (current_score + penalty(a,b,(current_i-i+1)) == scoreMatrix(i,current_j))
-
-              {
-
-                total_length1+=(current_i-i);
-
-                current_score = scoreMatrix(i,current_j);
-
-                for (j in (current_i-1)..i)
-
-                {
-
-                  //int1= input1[j] + int1;
-
-
-
-                  int1.add(input1(i-1));
-
-                }
-
-
-
-                gaps+=1;
-
-
-
-                current_i=i;
-
-
-
-                break outer;
-
- 
-
-              }
-
-            }
-
-          }
-
-
-
-          else 
-
-
-
-             {
-
-            outer: for (var i:Long=current_j;i>=0;--i)
-
-            {
-
-              if (current_score + penalty(a,b,(current_j-i+1)) == scoreMatrix(current_i,i))
-
-              {
-
-                total_length2+=(current_j-i);
-
-                current_score = scoreMatrix(current_i,i);
-
-                for (j in (current_j-1)..i)
-
-                {
-
-                  //int2=input2[j] + int2;
-
-
-
-                  in2.add(input2(j-1));
-
-                }
-
-
-
-                gaps+=1;
-
-
-
-                current_j=i;
-
-
-
-                break outer;
-
- 
-
-              }
-
-            }
-
-          }
-
-
-
-        
-
-
-
-
-
-
-
-     }
-
-
-
-     Console.OUT.println("Identity: " + identity + "/" + total_length1 + "(" + identity/total_length1*100 +"%)"); 
-
-     Console.OUT.println("Gaps: " + gaps + "/" + total_length1 + "(" +gaps/total_length1*100 + "%)");
-
-
-
-     Console.OUT.println("Score: " + score);
-
-
-
-     //Console.OUT.println("1: " + in1);
-
-     //Console.OUT.println("2: " + in2);
-
-     
-
-     Console.OUT.print("1: ");
-
-     for (i in in1.size..0) 
-
-     {
-
-      Console.OUT.print(in1(i));
-
-     }
-
-
-
-     Console.OUT.println();
-
-
-
-
-
-     Console.OUT.print("2: ");
-
-     for (i in in2.size..0) 
-
-     {
-
-      Console.OUT.print(in2(i));
-
-     }
-
-
-
-     Console.OUT.println();
-
-
-
-
-
-	   return null;
-
+   public static def traceback(scoreMatrix: Array_2[Long], input1:Rail[Char], input2:Rail[Char], blosum:Array_2[Long]): Rail[Rail[Long]] {
+	   var bestScore:Long = 0;
+	   val bestCoordinate:Rail[Long] = new Rail[Long](2);
+	   
+	   val resultList = new ArrayList[Rail[Long]]();
+	   //bestCoordinate(0) is row, bestCoordinate(1) is column;
+	   for (var r:Long = 1;r<=input1.size;r++){
+		   for(var c:Long = 1; c<=input2.size; c++){
+			   if(scoreMatrix(r,c) > bestScore){
+				   bestScore = scoreMatrix(r,c);
+				   bestCoordinate(0) = r;
+				   bestCoordinate(1) = c;
+			   }
+		   }
+	   }	
+	   var curRow:Long = bestCoordinate(0);
+	   var curColumn:Long = bestCoordinate(1);
+	   val curCoordinate:Rail[Long] = new Rail[Long](2);
+	   curCoordinate(0) = curRow;
+	   curCoordinate(1) = curColumn;
+	   // start to find the route;
+
+	   while(true){
+		   if (curRow!=0 && curColumn!=0){
+			   val midResult = new Rail[Long](2);
+			   midResult(0) = curRow;
+			   midResult(1) = curColumn;
+			   resultList.add(midResult);
+			   var tempColumn:Long = curColumn-1;
+			   var tempRow:Long = curRow;
+			   var BestScore:Long = scoreMatrix(curRow,curColumn-1);
+			   // val upScore:Long = scoreMatrix(curRow,curColumn-1);
+			   val leftScore:Long = scoreMatrix(curRow-1,curColumn);
+			   if(leftScore>BestScore){
+				   BestScore = leftScore;
+				   tempRow = curRow-1;
+				   tempColumn = curColumn;
+			   }
+			   val leftupScore:Long = scoreMatrix(curRow-1,curColumn-1);
+			   if(leftupScore>BestScore){
+				   BestScore = leftupScore;
+				   tempRow = curRow-1;
+				   tempColumn = curColumn-1;
+			   }
+			   curRow = tempRow;
+			   curColumn = tempColumn;
+			   //check if the best score is 0;
+			   if(bestScore == 0){
+				   midResult(0) = curRow;
+				   midResult(1) = curColumn;
+				   if(curRow!=0 && curColumn!=0){
+					   resultList.add(midResult);
+				   }
+				   break;
+			   }
+		   }
+		   else{
+			   break;
+		   }
+	   }
+	   
+	   
+	   val finalResult:Rail[Rail[Long]] = new Rail[Rail[Long]](resultList.size());
+	   for(var i:Long = resultList.size()-1; i>=0;i--){
+		   finalResult(resultList.size()-1-i) = resultList.get(i);
+	   }
+	   
+	   return finalResult;
           
 
    }
@@ -611,17 +396,21 @@ public class waterman {
 
     	
 
-    	/*
+    	
 
     	val scoreMatrix = new Array_2[Long](n, m, 0); // build a n x m matrix and initialize everything to 0, no need to initialize the first row and column;
 
     	calculate(scoreMatrix,charList1,charList2,blosum); // calculate the score matrix
 
-    	val sequence:Rail[Point] = traceback(scoreMatrix,charList1,charList2,blosum); // trace back and give out the sequence;
+    	val sequence:Rail[Rail[Long]] = traceback(scoreMatrix,charList1,charList2,blosum); // trace back and give out the sequence;
+    	for (var i:Long = 0;i<sequence.size;i++){
+    		Console.OUT.println(sequence(i)); 
+    	}
+    	//暂时查看结果的坐标
 
-    	printResult(sequence); // print the result;
+    	//printResult(sequence); // print the result;
 
-    	*/
+    	
 
     	
 
