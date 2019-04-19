@@ -423,7 +423,10 @@ public class waterman {
    //main function
 
     public static def main(args: Rail[String]) {
-
+    	val date1 = new Date();
+    	
+    	val starttime = date1.getTime();
+    	
     	val charList1:Rail[Char] = parseInput("./AF043946.1");
 
     	val charList2:Rail[Char] = parseInput("./AF043947.1");
@@ -463,7 +466,10 @@ public class waterman {
     	//暂时查看结果的坐标
 
     	//printResult(sequence); // print the result;
-
+    	val date2 = new Date();
+    	val endtime = date2.getTime();
+    	
+    	Console.OUT.println("Running Time: "+(endtime-starttime) +"  milliseconds."); 
     	
 
     	
