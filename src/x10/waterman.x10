@@ -325,6 +325,8 @@ public class waterman {
 		   finalResult(resultList.size()-1-i) = resultList.get(i);
 	   }
 	   
+	   printResult(finalResult,input1,input2,bestScore);
+	   
 	   return finalResult;
           
 
@@ -344,11 +346,63 @@ public class waterman {
 
    // Print Result
 
-   public static def printResult(seq:Rail[Point]): void{
-
-	   //TODO 
-
-	   // 打印结果
+   public static def printResult(seq:Rail[Rail[Long]],input1:Rail[Char],input2:Rail[Char], maxScore:Long): void{
+	   val totalLength:Float = seq.size;
+	   var Gaps:Float = 0;
+	   var identity:Float = 0;
+	   val output1 = new ArrayList[Char]();
+	   val output2 = new ArrayList[Char]();
+	   var lastRow:Long = seq(0)(0);
+	   var lastColumn:Long = seq(0)(1);
+	   
+	   // add the start point to the list;
+	   output1.add(input1(lastRow-1));
+	   output2.add(input2(lastColumn-1));
+	   if (input1(lastRow-1).equals(input2(lastColumn-1))){
+		   identity++;
+	   }
+	   
+	   for(var i:Long = 1; i<totalLength;i++){
+		   val coor:Rail[Long] = seq(i);
+		   val row:Long = coor(0);
+		   val column:Long = coor(1);
+		   if((row - lastRow) == 0){
+			   output1.add('-');
+			   output2.add(input2(column-1));
+			   Gaps++;
+		   }
+		   else if((column - lastColumn) == 0){
+			   output2.add('-');
+			   output1.add(input1(row-1));
+			   Gaps++;
+		   }
+		   else if((row - lastRow) == 1 && (column - lastColumn) ==1){
+			   output1.add(input1(row-1));
+			   output2.add(input2(column-1));
+		   }
+		   lastRow = row;
+		   lastColumn = column;
+		   if (input1(lastRow-1).equals(input2(lastColumn-1))){
+			   identity++;
+		   }
+	   }
+	   
+	   
+	   
+	   Console.OUT.println("Identity: "+identity+"/"+ totalLength + " (" + (identity/totalLength)*100 + "%)"); 
+	   Console.OUT.println("Gaps: "+Gaps+"/"+ totalLength + " (" + (Gaps/totalLength)*100 + "%)"); 
+	   Console.OUT.println("Score: "+maxScore); 
+	   Console.OUT.print("1: "); 
+	   for(var i:Long = 0; i<output1.size();i++){
+		   Console.OUT.print(output1.get(i)); 
+	   }
+	   Console.OUT.print("\n");
+	   
+	   Console.OUT.print("2: "); 
+	   for(var i:Long = 0; i<output2.size();i++){
+		   Console.OUT.print(output2.get(i)); 
+	   }
+	   Console.OUT.print("\n");
 
    }
 
@@ -403,9 +457,9 @@ public class waterman {
     	calculate(scoreMatrix,charList1,charList2,blosum); // calculate the score matrix
 
     	val sequence:Rail[Rail[Long]] = traceback(scoreMatrix,charList1,charList2,blosum); // trace back and give out the sequence;
-    	for (var i:Long = 0;i<sequence.size;i++){
-    		Console.OUT.println(sequence(i)); 
-    	}
+    	// for (var i:Long = 0;i<sequence.size;i++){
+    	// 	Console.OUT.println(sequence(i)); 
+    	// }
     	//暂时查看结果的坐标
 
     	//printResult(sequence); // print the result;
