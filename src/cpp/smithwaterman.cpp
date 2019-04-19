@@ -12,6 +12,12 @@ struct sw_result
     std::string match_str2;
 };
 
+struct match
+{
+    int position;
+    double value;
+};
+
 double match_score_table[4][4] = {
     {1, 0, 0, 0},
     {0, 1, 0, 0},
@@ -36,21 +42,27 @@ int max3select(double in1, double in2, double in3)
         in1 = in3;
         result = 2;
     }
-    if (0>in1)
+    if (0 > in1)
     {
         result = -1; // zero result
     }
     return result;
 }
 
-double abs_i(int i)
+inline int abs_i(int i)
 {
     return (i > 0) ? i : -i;
 }
 
-double gap_match_penalty(int pos1, int pos2, double A)
+inline double gap_match_penalty(int pos1, int pos2, double A, double B)
 {
-    return abs_i(pos1 - pos2) * A;
+    auto gap = abs_i(pos1 - pos2);
+    switch(gap)
+    {
+        case 0: return 0;
+        case 1: return B;
+        default: return (gap-1)*A+B;
+    }
 }
 
 int double_zero(double in)
@@ -71,35 +83,55 @@ struct sw_result smith_waterman(std::vector<char> src1, std::vector<char> src2, 
     for (int i = 0; i < (len1 + 1); i++)
     {
         array[i][0] = 0;
-        back_trace[i][0][0]=-1;
-        back_trace[i][0][1]=-1;
+        back_trace[i][0][0] = -1;
+        back_trace[i][0][1] = -1;
     }
     for (int i = 0; i < (len2 + 1); i++)
     {
         array[0][i] = 0;
-        back_trace[0][i][0]=-1;
-        back_trace[0][i][1]=-1;
+        back_trace[0][i][0] = -1;
+        back_trace[0][i][1] = -1;
     }
 
     //simple match
     for (int a = 1; a < (len1 + 1); a++)
     {
-        double row_max = 0;
-        int rmax_back[2];
-        rmax_back[0] = a;
-        rmax_back[1] = 0;
         for (int b = 1; b < (len2 + 1); b++)
         {
-            double normal_match = array[a - 1][b - 1] + match_score(src1[a - 1], src2[b - 1]);
-            double row_match = row_max + gap_match_penalty(b, rmax_back[1], A);
-            // std::cout<<"rmax"<<row_max<<std::endl;
-            // std::cout<<"rmaxb"<<rmax_back[1]<<std::endl;
-            double col_match = col_max + gap_match_penalty(a, cmax_back[b][0], A);
+            struct match normal_match = {0, array[a - 1][b - 1]};
+            struct match row_match;
+            struct match col_match;
+
+            //row match
+            double max = 0;
+            int max_position = 0;
+            for(int i=0; i<b; i++){
+                auto val = array[a][i] - gap_match_penalty(b, i, A, B);
+                if(val>max){
+                    max=val;
+                    max_position=i;
+                }
+            }
+            row_match.position=max_position;
+            row_match.value=max;
+
+            //col match
+            max = 0;
+            max_position = 0;
+            for(int i=0; i<a; i++){
+                auto val = array[i][b] - gap_match_penalty(a, i, A, B);
+                if(val>max){
+                    max=val;
+                    max_position=i;
+                }
+            }
+            col_match.position=max_position;
+            col_match.value=max;
+
             int select = max3select(
-                normal_match,
-                row_match,
-                col_match
-                );
+                normal_match.value,
+                row_match.value,
+                col_match.value);
             // std::cout<<"match step: "<<select<<","<<normal_match<<","<<row_match<<","<<col_match<<std::endl;
             //update opt_array
             switch (select)
@@ -108,75 +140,66 @@ struct sw_result smith_waterman(std::vector<char> src1, std::vector<char> src2, 
                 array[a][b] = 0;
                 break;
             case 0:
-                array[a][b] = normal_match;
+                array[a][b] = normal_match.value;
                 break;
             case 1:
-                array[a][b] = row_match;
+                array[a][b] = row_match.value;
                 break;
             case 2:
-                array[a][b] = col_match;
+                array[a][b] = col_match.value;
                 break;
             }
             //update back trace
             switch (select)
             {
             case -1:
-                back_trace[a][b][0]=-1; // can not back trace
-                back_trace[a][b][1]=-1; // can not back trace
+                back_trace[a][b][0] = -1; // can not back trace
+                back_trace[a][b][1] = -1; // can not back trace
             case 0:
                 back_trace[a][b][0] = a - 1;
                 back_trace[a][b][1] = b - 1;
                 break;
             case 1:
-                back_trace[a][b][0] = rmax_back[0];
-                back_trace[a][b][1] = rmax_back[1];
+                back_trace[a][b][0] = a;
+                back_trace[a][b][1] = row_match.position;
                 break;
             case 2:
-                back_trace[a][b][0] = cmax_back[b][0];
-                back_trace[a][b][1] = cmax_back[b][1];
+                back_trace[a][b][0] = col_match.position;
+                back_trace[a][b][1] = b;
                 break;
-            }
-
-            //update row_max
-            if (array[a][b] > row_max)
-            {
-                row_max = array[a][b];
-                rmax_back[0] = a;
-                rmax_back[1] = b;
-                // std::cout<<"rud"<<row_max<<" "<<rmax_back[0]<<" "<<rmax_back[1]<<std::endl;
-            }
-            //update col_max
-            if (array[a][b] > col_max)
-            {
-                cmax[b] = array[a][b];
-                cmax_back[b][0] = a;
-                cmax_back[b][1] = b;
-                // std::cout<<"cud"<<cmax[b]<<" "<<cmax_back[b][0]<<" "<<cmax_back[b][1]<<std::endl;
             }
         }
     }
     //match finished
 
-    //for debug: print the whole array 
-    std::cout<<"Match array:"<<std::endl;
-    for(int a=0; a< (len1+1); a++){
-        for(int b=0; b<(len2+1); b++){
-            std::cout<<array[a][b]<<" ";
+    //for debug: print the whole array
+    std::cout << "Match array:" << std::endl;
+    for (int a = 0; a < (len1 + 1); a++)
+    {
+        for (int b = 0; b < (len2 + 1); b++)
+        {
+            std::cout << array[a][b] << " ";
         }
-        std::cout<<std::endl;
+        std::cout << std::endl;
     }
 
-    std::cout<<"Back Trace array:"<<std::endl;
-    for(int a=0; a< (len1+1); a++){
-        for(int b=0; b<(len2+1); b++){
-            std::cout<<"("<<back_trace[a][b][0]<<","<<back_trace[a][b][1]<<")"<<" ";
+    std::cout << "Back Trace array:" << std::endl;
+    for (int a = 0; a < (len1 + 1); a++)
+    {
+        for (int b = 0; b < (len2 + 1); b++)
+        {
+            std::cout << "(" << back_trace[a][b][0] << "," << back_trace[a][b][1] << ")"
+                      << " ";
         }
-        std::cout<<std::endl;
+        std::cout << std::endl;
     }
     //back trace
     //do gap, match count here
     //build match str
-    res.score=array[len1][len2];
+    res.score = array[len1][len2];
+
+    //TODO trace back
+
     return res;
     // return 1;
 }
