@@ -1,5 +1,7 @@
 # .PHONY baseline_compile baseline_run omp_compile omp_run
 
+run: omp_compile omp_run
+
 baseline_compile: cpp_interface.cpp smithwaterman.cpp smithwaterman.h
 	g++ cpp_interface.cpp smithwaterman.cpp -g -o baseline
 
@@ -9,8 +11,7 @@ baseline_run: baseline
 omp_compile: cpp_interface.cpp omp_smithwaterman.cpp smithwaterman.h
 	g++ cpp_interface.cpp omp_smithwaterman.cpp -g -o omp
 
-omp_run: baseline
+omp_run: omp
 	./omp x y z -0.5 0
 
-run: omp_run
 	

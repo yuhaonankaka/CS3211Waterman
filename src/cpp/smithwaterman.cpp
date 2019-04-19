@@ -82,16 +82,6 @@ struct sw_result smith_waterman(std::vector<char> src1, std::vector<char> src2, 
     }
 
     //simple match
-
-    double cmax[len2 + 1];
-    int cmax_back[len2 + 1][2];
-    for (int i = 0; i < (len2 + 1); i++)
-    {
-        cmax[i] = 0;
-        cmax_back[i][0] = 0;
-        cmax_back[i][1] = i;
-    }
-
     for (int a = 1; a < (len1 + 1); a++)
     {
         double row_max = 0;
@@ -100,7 +90,6 @@ struct sw_result smith_waterman(std::vector<char> src1, std::vector<char> src2, 
         rmax_back[1] = 0;
         for (int b = 1; b < (len2 + 1); b++)
         {
-            double col_max = cmax[b];
             double normal_match = array[a - 1][b - 1] + match_score(src1[a - 1], src2[b - 1]);
             double row_match = row_max + gap_match_penalty(b, rmax_back[1], A);
             // std::cout<<"rmax"<<row_max<<std::endl;
