@@ -79,9 +79,11 @@ def rand_str(length):
         str=str+rand_alpha()
     return str
 
-def make_input_file(string, name):
+def make_input_file(length, name):
     output=
-        r''' '''
+        r'''>gi|2829193|gb|AF043946.1| ... ignore all this ...
+'''
+    output=output+rand_str(length)
     with open(name, 'w') as f:
         f.write(output)
 ```
